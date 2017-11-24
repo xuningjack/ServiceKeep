@@ -6,9 +6,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name">
+        android:allowBackup="true">
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -16,6 +14,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+
+        <service
+            android:name="jack.com.servicekeep.service.WorkService"
+            android:exported="true"
+            android:persistent="true"
+            android:label="Jack"
+            android:process="com.jack.service">
+            <intent-filter>
+                <action android:name="jack.com.servicekeep.intent.action.JACK" />
+            </intent-filter>
+        </service>
+
     </application>
 
 </manifest>
