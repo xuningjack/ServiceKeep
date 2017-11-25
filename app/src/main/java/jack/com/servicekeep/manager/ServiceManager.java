@@ -8,6 +8,7 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.IBinder;
+import android.text.TextUtils;
 
 import java.util.List;
 
@@ -57,26 +58,28 @@ public enum ServiceManager {
         //check process list
         List<ActivityManager.RunningAppProcessInfo> processList = mActivityManager.getRunningAppProcesses();
         for (ActivityManager.RunningAppProcessInfo process : processList) {
-            if (process.processName.equals(Constants.PUSH_SERVICE_PROCESS_NAME)) {
+            if (TextUtils.equals(process.processName, Constant.PUSH_SERVICE_PROCESS_NAME)) {
                 mPushServiceHostPackageName = process.pkgList[0];
                 if (!PreferencesManager.getInstance().getHostAppPackageName(context).equals(mPushServiceHostPackageName)) {
                     PreferencesManager.getInstance().setHostAppPackageName(context, mPushServiceHostPackageName);
                 }
-                LogUtils.e(Constants.LOG_TAG,
-                        "PushService Already Running, Host PackageName : [" + mPushServiceHostPackageName + "]");
+                LogUtils.e(TAG, "PushService Already Running, Host PackageName : [" + mPushServiceHostPackageName + "]");
                 return true;
             }
         }
         //check service list
         List<ActivityManager.RunningServiceInfo> serviceList = mActivityManager.getRunningServices(Integer.MAX_VALUE);
         for (ActivityManager.RunningServiceInfo service : serviceList) {
-            if (Constants.PUSH_SERVICE_PROCESS_NAME.equals(service.process) ||
-                    PushService.class.getName().equals(service.service.getClassName())) {
+
+            if (TextUtils.equals(service.process, Constants.PUSH_SERVICE_PROCESS_NAME) ||
+                    TextUtils.equals(PushService.class.getName(), service.service.getClassName())) {
                 mPushServiceHostPackageName = service.service.getPackageName();
-                if (!PreferencesManager.getInstance().getHostAppPackageName(context).equals(mPushServiceHostPackageName)) {
-                    PreferencesManager.getInstance().setHostAppPackageName(context, mPushServiceHostPackageName);
+                if (!TextUtils.equals(mPushServiceHostPackageName,
+                        PreferencesManager.getInstance().getHostAppPackageName(context))) {
+                    PreferencesManager.getInstance().
+                            setHostAppPackageName(context, mPushServiceHostPackageName);
                 }
-                LogUtils.e(Constants.LOG_TAG, "PushService Already Running, Host PackageName : [" +
+                LogUtils.e(TAG, "PushService Already Running, Host PackageName : [" +
                         mPushServiceHostPackageName + "]");
                 return true;
             }
@@ -100,7 +103,8 @@ public enum ServiceManager {
         try {
             //bind PushService
             Intent intent = new Intent();
-            intent.setAction(mPushServiceHostPackageName + Constants.PUSH_HOST_SERVICE_INTENT_ACTION_FLAG);
+            intent.setAction(mPushServiceHostPackageName +
+                    Constants.PUSH_HOST_SERVICE_INTENT_ACTION_FLAG);
             intent.setPackage(mPushServiceHostPackageName);
             Intent explicitIntent = getExplicitIntent(mContext, intent);
             if (explicitIntent == null) {
