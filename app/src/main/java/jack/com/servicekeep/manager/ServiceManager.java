@@ -32,6 +32,11 @@ public enum ServiceManager {
     INSTANCE;
 
     private final String TAG = "ServiceManager";
+    private String mServiceHostPackageName;
+    private WorkService mService;
+    private boolean isBinded;
+
+
 
 
     /**
@@ -59,11 +64,11 @@ public enum ServiceManager {
         List<ActivityManager.RunningAppProcessInfo> processList = mActivityManager.getRunningAppProcesses();
         for (ActivityManager.RunningAppProcessInfo process : processList) {
             if (TextUtils.equals(process.processName, Constant.PUSH_SERVICE_PROCESS_NAME)) {
-                mPushServiceHostPackageName = process.pkgList[0];
-                if (!PreferencesManager.getInstance().getHostAppPackageName(context).equals(mPushServiceHostPackageName)) {
-                    PreferencesManager.getInstance().setHostAppPackageName(context, mPushServiceHostPackageName);
+                mServiceHostPackageName = process.pkgList[0];
+                if (!PreferencesManager.getInstance().getHostAppPackageName(context).equals(mServiceHostPackageName)) {
+                    PreferencesManager.getInstance().setHostAppPackageName(context, mServiceHostPackageName);
                 }
-                LogUtils.e(TAG, "PushService Already Running, Host PackageName : [" + mPushServiceHostPackageName + "]");
+                LogUtils.e(TAG, "PushService Already Running, Host PackageName : [" + mServiceHostPackageName + "]");
                 return true;
             }
         }
@@ -72,15 +77,15 @@ public enum ServiceManager {
         for (ActivityManager.RunningServiceInfo service : serviceList) {
 
             if (TextUtils.equals(service.process, Constants.PUSH_SERVICE_PROCESS_NAME) ||
-                    TextUtils.equals(PushService.class.getName(), service.service.getClassName())) {
-                mPushServiceHostPackageName = service.service.getPackageName();
-                if (!TextUtils.equals(mPushServiceHostPackageName,
+                    TextUtils.equals(WorkService.class.getName(), service.service.getClassName())) {
+                mServiceHostPackageName = service.service.getPackageName();
+                if (!TextUtils.equals(mServiceHostPackageName,
                         PreferencesManager.getInstance().getHostAppPackageName(context))) {
                     PreferencesManager.getInstance().
-                            setHostAppPackageName(context, mPushServiceHostPackageName);
+                            setHostAppPackageName(context, mServiceHostPackageName);
                 }
                 LogUtils.e(TAG, "PushService Already Running, Host PackageName : [" +
-                        mPushServiceHostPackageName + "]");
+                        mServiceHostPackageName + "]");
                 return true;
             }
         }
@@ -103,10 +108,9 @@ public enum ServiceManager {
         try {
             //bind PushService
             Intent intent = new Intent();
-            intent.setAction(mPushServiceHostPackageName +
-                    Constants.PUSH_HOST_SERVICE_INTENT_ACTION_FLAG);
-            intent.setPackage(mPushServiceHostPackageName);
-            Intent explicitIntent = getExplicitIntent(mContext, intent);
+            intent.setAction(mServiceHostPackageName + Constants.PUSH_HOST_SERVICE_INTENT_ACTION_FLAG);
+            intent.setPackage(mServiceHostPackageName);
+            Intent explicitIntent = getExplicitIntent(context, intent);
             if (explicitIntent == null) {
                 return;
             }
@@ -157,7 +161,7 @@ public enum ServiceManager {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             try {
-                mPushService = IPushService.Stub.asInterface(iBinder);
+                mService = IPushService.Stub.asInterface(iBinder);
                 isBinded = true;
                 appRegister();
             } catch (Exception e) {
@@ -167,7 +171,7 @@ public enum ServiceManager {
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-            mPushService = null;
+            mService = null;
             isBinded = false;
         }
     };
