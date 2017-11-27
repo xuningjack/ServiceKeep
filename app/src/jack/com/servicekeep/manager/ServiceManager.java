@@ -4,14 +4,13 @@ import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.os.IBinder;
 import android.text.TextUtils;
 
 import java.util.List;
 
+import jack.com.servicekeep.Constant;
 import jack.com.servicekeep.service.WorkService;
 import jack.com.servicekeep.utils.LogUtils;
 
@@ -32,8 +31,10 @@ public enum ServiceManager {
     INSTANCE;
 
     private final String TAG = "ServiceManager";
-    private String mServiceHostPackageName;
-    private WorkService mService;
+
+    /** 宿主的包名 */
+    private String mPushServiceHostPackageName;
+    /** 是否绑定了PushService服务 */
     private boolean isBinded;
 
 
@@ -45,10 +46,10 @@ public enum ServiceManager {
     public void needKeepAlive(Context context) {
         if (!isServiceProcessRunning(context)) {
             LogUtils.d(TAG, "openPush -------- is not ServiceProcessRunning");
-            startPushService(context);
+            startWorkService(context);
         } else {
             LogUtils.d(TAG, "openPush -------- is ServiceProcessRunning");
-            bindPushService(context);
+            bindWorkService(context);
         }
     }
 
@@ -60,32 +61,28 @@ public enum ServiceManager {
     private boolean isServiceProcessRunning(Context context) {
         ActivityManager mActivityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
 
-        //check process list
         List<ActivityManager.RunningAppProcessInfo> processList = mActivityManager.getRunningAppProcesses();
         for (ActivityManager.RunningAppProcessInfo process : processList) {
-            if (TextUtils.equals(process.processName, Constant.PUSH_SERVICE_PROCESS_NAME)) {
-                mServiceHostPackageName = process.pkgList[0];
-                if (!PreferencesManager.getInstance().getHostAppPackageName(context).equals(mServiceHostPackageName)) {
-                    PreferencesManager.getInstance().setHostAppPackageName(context, mServiceHostPackageName);
+            if (TextUtils.equals(process.processName, Constant.KEEP_ALIVE_SERVICE_PROCESS_NAME)) {
+                mPushServiceHostPackageName = process.pkgList[0];
+                if (!PreferencesManager.getInstance().getHostAppPackageName(context).equals(mPushServiceHostPackageName)) {
+                    PreferencesManager.getInstance().setHostAppPackageName(context, mPushServiceHostPackageName);
                 }
-                LogUtils.e(TAG, "PushService Already Running, Host PackageName : [" + mServiceHostPackageName + "]");
+                LogUtils.e(TAG,
+                        "PushService Already Running, Host PackageName : [" + mPushServiceHostPackageName + "]");
                 return true;
             }
         }
-        //check service list
         List<ActivityManager.RunningServiceInfo> serviceList = mActivityManager.getRunningServices(Integer.MAX_VALUE);
         for (ActivityManager.RunningServiceInfo service : serviceList) {
-
-            if (TextUtils.equals(service.process, Constants.PUSH_SERVICE_PROCESS_NAME) ||
+            if (Constant.KEEP_ALIVE_SERVICE_PROCESS_NAME.equals(service.process) ||
                     TextUtils.equals(WorkService.class.getName(), service.service.getClassName())) {
-                mServiceHostPackageName = service.service.getPackageName();
-                if (!TextUtils.equals(mServiceHostPackageName,
-                        PreferencesManager.getInstance().getHostAppPackageName(context))) {
-                    PreferencesManager.getInstance().
-                            setHostAppPackageName(context, mServiceHostPackageName);
+                mPushServiceHostPackageName = service.service.getPackageName();
+                if (!PreferencesManager.getInstance().getHostAppPackageName(context).equals(mPushServiceHostPackageName)) {
+                    PreferencesManager.getInstance().setHostAppPackageName(context, mPushServiceHostPackageName);
                 }
                 LogUtils.e(TAG, "PushService Already Running, Host PackageName : [" +
-                        mServiceHostPackageName + "]");
+                        mPushServiceHostPackageName + "]");
                 return true;
             }
         }
@@ -96,7 +93,7 @@ public enum ServiceManager {
     /**
      * 开启Push Service
      */
-    private void startPushService(Context context) {
+    private void startWorkService(Context context) {
         WorkService.startService(context);
     }
 
@@ -104,17 +101,17 @@ public enum ServiceManager {
     /**
      * 绑定Push Service
      */
-    private void bindPushService(Context context) {
+    private void bindWorkService(Context context) {
         try {
             //bind PushService
             Intent intent = new Intent();
-            intent.setAction(mServiceHostPackageName + Constants.PUSH_HOST_SERVICE_INTENT_ACTION_FLAG);
-            intent.setPackage(mServiceHostPackageName);
+            intent.setAction(mPushServiceHostPackageName + Constant.PUSH_HOST_SERVICE_INTENT_ACTION_FLAG);
+            intent.setPackage(mPushServiceHostPackageName);
             Intent explicitIntent = getExplicitIntent(context, intent);
             if (explicitIntent == null) {
                 return;
             }
-            context.bindService(explicitIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+            //context.bindService(explicitIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -155,26 +152,13 @@ public enum ServiceManager {
 
 
     /**
-     * 绑定PushService服务
+     * 解绑PushService
      */
-    private ServiceConnection mServiceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            try {
-                mService = IPushService.Stub.asInterface(iBinder);
-                isBinded = true;
-                appRegister();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName componentName) {
-            mService = null;
+    private void unbindPushService() {
+        if (isBinded) {
+            //mPushService = null;
             isBinded = false;
         }
-    };
-
+    }
 
 }
