@@ -15,16 +15,21 @@
             </intent-filter>
         </activity>
 
+        <!--增加唤醒WorkService的定时任务-->
+        <service
+            android:name="jack.com.servicekeep.service.KeepAliveJobSchedulerService"
+            android:persistent="true"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:process="jack.com.servicekeep.job_scheduler_service"/>
 
+        <!--todo 自己业务保活的Service-->
         <service
             android:name="jack.com.servicekeep.service.WorkService"
             android:exported="true"
             android:persistent="true"
             android:label="Jack"
             android:process="com.jack.service">
-            <intent-filter>
-                <action android:name="jack.com.servicekeep.intent.action.JACK" />
-            </intent-filter>
         </service>
 
     </application>
