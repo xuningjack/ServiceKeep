@@ -48,6 +48,7 @@ public enum KeepAliveManager {
                 String executable = "libhelper.so";
                 String aliasFile = "helper";
                 final String serviceName = context.getPackageName() + "/jack.com.servicekeep.service.WorkService";
+                LogUtils.d(TAG, "serviceName-----------" + serviceName);
                 NativeRuntime.INSTANCE.runExecutable(context.getPackageName(), executable, aliasFile, serviceName);
                 //开启service
                 new Thread(new Runnable() {
@@ -76,7 +77,6 @@ public enum KeepAliveManager {
         if (context != null) {
             LogUtils.d(TAG, "KeepAliveManager--------startJobScheduler");
             JobScheduler jobScheduler = (JobScheduler) context.getSystemService(JOB_SCHEDULER_SERVICE);
-            /*
             //开启唤醒PushService的定时任务
             ComponentName componentName = new ComponentName("jack.com.servicekeep",
                     "jack.com.servicekeep.service.KeepAliveJobSchedulerService");
@@ -84,9 +84,9 @@ public enum KeepAliveManager {
             JobInfo.Builder builder = new JobInfo.Builder(JOB_ID, componentName);
             builder.setPeriodic(PERIOD);
             builder.setPersisted(true);   //需要权限RECEIVE_BOOT_COMPLETED
-            jobScheduler.schedule(builder.build());*/
+            jobScheduler.schedule(builder.build());
 
-            /*ComponentName jobService = new ComponentName(context.getPackageName(),
+            ComponentName jobService = new ComponentName(context.getPackageName(),
                     KeepAliveJobSchedulerService.class.getName());
             JobInfo jobInfo = new JobInfo.Builder(JOB_ID, jobService)
                     .setPeriodic(PERIOD)    //设置间隔时间
@@ -98,11 +98,11 @@ public enum KeepAliveManager {
                 LogUtils.d(TAG, "startJobScheduler ------ success!!!");
             }else{
                 LogUtils.d(TAG, "startJobScheduler ------ fail!!!");
-            }*/
+            }
 
 
-            Intent startServiceIntent = new Intent(context, WorkService.class);
-            context.startService(startServiceIntent);
+          /*  Intent startServiceIntent = new Intent(context, WorkService.class);
+            context.startService(startServiceIntent);*/
 
         }
     }

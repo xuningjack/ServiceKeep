@@ -20,7 +20,7 @@
 #define INEXACT_MATCH     0
 #define MAX_LINE_LEN 5
 
-#define TAG "PushHelper"
+#define TAG "JackHelper"
 //定义TAG
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
@@ -64,11 +64,11 @@ void checkAndRestartService(char* service) {
 
 
 /**
- * 死循环监听PushService
+ * 死循环监听WorkService
  */
 void thread(char* srvname) {
 	while(1){
-	    LOGI("-----------------死循环监听PushService");
+	    LOGI("-----------------死循环监听WorkService");
 		checkAndRestartService(srvname);
 		sleep(30);
 	}
@@ -80,7 +80,7 @@ void thread(char* srvname) {
  * srvname  服务名
  * sd 之前创建子进程的pid写入的文件路径
  */
-int startPushService(char* srvname, char* sd) {
+int startWorkService(char* srvname, char* sd) {
     //pthread_t用于声明线程ID
 	pthread_t id;
 	struct rlimit resourceLimit;
@@ -93,7 +93,7 @@ int startPushService(char* srvname, char* sd) {
 	if (pid < 0) {
 		LOGI("first fork() error pid %d,so exit", pid);
 		exit(0);
-	} else if (pid != 0) {
+	} else if (pid > 0) {
 		LOGI("first fork(): I'am father pid=%d", getpid());   //在unistd.h中
 	} else { //  第一个子进程
 		LOGI("first fork(): I'am child pid=%d", getpid());
@@ -200,8 +200,8 @@ void Java_jack_com_servicekeep_fork_NativeRuntime_startService(JNIEnv* env, jobj
 		jstring processName, jstring sdpath) {
 	char* rtn = jstringTostring(env, processName);     // 得到进程名称
 	char* sd = jstringTostring(env, sdpath);
-	LOGI("Java_com_wanmei_push_fork_NativeRuntime_startService run....ProcessName:%s", rtn);
-	startPushService(rtn, sd);
+	LOGI("Java_jack_com_servicekeep_fork_NativeRuntime_startService run....ProcessName:%s", rtn);
+	startWorkService(rtn, sd);
 }
 
 
