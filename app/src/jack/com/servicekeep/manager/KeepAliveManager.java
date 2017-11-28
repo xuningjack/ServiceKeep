@@ -5,20 +5,21 @@ import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Build;
 
 import java.util.concurrent.TimeUnit;
 
 import jack.com.servicekeep.fork.NativeRuntime;
 import jack.com.servicekeep.service.KeepAliveJobSchedulerService;
-import jack.com.servicekeep.service.WorkService;
 import jack.com.servicekeep.utils.FileUtils;
 import jack.com.servicekeep.utils.LogUtils;
 
 import static android.app.job.JobScheduler.RESULT_SUCCESS;
 import static android.content.Context.JOB_SCHEDULER_SERVICE;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+
+
+
 
 
 /**
@@ -99,11 +100,6 @@ public enum KeepAliveManager {
             }else{
                 LogUtils.d(TAG, "startJobScheduler ------ fail!!!");
             }
-
-
-          /*  Intent startServiceIntent = new Intent(context, WorkService.class);
-            context.startService(startServiceIntent);*/
-
         }
     }
 }
