@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 import jack.com.servicekeep.fork.NativeRuntime;
 import jack.com.servicekeep.service.KeepAliveJobSchedulerService;
+import jack.com.servicekeep.service.WorkService;
 import jack.com.servicekeep.utils.FileUtils;
 import jack.com.servicekeep.utils.LogUtils;
 
@@ -37,6 +38,17 @@ public enum KeepAliveManager {
      * 每隔1s中唤醒一次
      */
     private final int PERIOD = 1000;
+
+
+
+
+    /**
+     * 停止运行保活的服务
+     * @param context
+     */
+    public void stopKeepAliveSerice(final Context context){
+        WorkService.stopservice(context);
+    }
 
 
     /**

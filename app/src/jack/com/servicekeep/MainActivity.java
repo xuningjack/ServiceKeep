@@ -23,17 +23,14 @@ public class MainActivity extends Activity implements View.OnClickListener{
         mStartService = (TextView) findViewById(R.id.start_service);
         mKillService.setOnClickListener(this);
         mStartService.setOnClickListener(this);
-
-
-
     }
+
 
     @Override
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.kill_service:
-
-
+                KeepAliveManager.INSTANCE.stopKeepAliveSerice(MainActivity.this);
                 break;
             case R.id.start_service:
                 KeepAliveManager.INSTANCE.startKeepAliveService(MainActivity.this);

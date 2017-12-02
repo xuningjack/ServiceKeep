@@ -45,10 +45,10 @@ public enum ServiceManager {
      */
     public void needKeepAlive(Context context) {
         if (!isServiceProcessRunning(context)) {
-            LogUtils.d(TAG, "openPush -------- is not ServiceProcessRunning");
+            LogUtils.d(TAG, "needKeepAlive -------- is not ServiceProcessRunning");
             startWorkService(context);
         } else {
-            LogUtils.d(TAG, "openPush -------- is ServiceProcessRunning");
+            LogUtils.d(TAG, "needKeepAlive -------- is ServiceProcessRunning");
             bindWorkService(context);
         }
     }

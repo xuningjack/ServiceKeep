@@ -5,6 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import jack.com.servicekeep.utils.LogUtils;
 
 
@@ -25,6 +28,17 @@ public class WorkService extends Service {
     private final static String ACTION_START = "action_start";
 
 
+    /**
+     * 停止服务
+     * @param context
+     */
+    public static void stopservice(Context context){
+        if(context != null){
+            LogUtils.d(TAG, "Jack is a good man!! ------- stopService");
+            Intent intent = new Intent(context, WorkService.class);
+            context.stopService(intent);
+        }
+    }
 
     /**
      * 开启PushService
@@ -32,9 +46,11 @@ public class WorkService extends Service {
      */
     public static void startService(Context context) {
         LogUtils.d(TAG, "Jack is a good man!!  startService");
-        Intent intent = new Intent(context, WorkService.class);
-        intent.setAction(ACTION_START);
-        context.startService(intent);
+        if(context != null) {
+            Intent intent = new Intent(context, WorkService.class);
+            intent.setAction(ACTION_START);
+            context.startService(intent);
+        }
     }
 
     @Override
@@ -47,10 +63,21 @@ public class WorkService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         //todo 启动子线程执行耗时操作
-        LogUtils.d(TAG, "WorkService----------onStartCommand Service工作了");
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                LogUtils.d(TAG, "WorkService----------onStartCommand Service工作了");
+            }
+        };
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(timerTask, 1000, 1000);
+
         return START_STICKY;
     }
 
-
-
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        LogUtils.d(TAG, "workservice ------- is stoped!!!");
+    }
 }
