@@ -57,7 +57,8 @@ void checkAndRestartService(char* service) {
 	//通过arm命令进行拉活
 	sprintf(cmdline, "am startservice --user 0 -n %s", service);
 	char tmp[200];
-	sprintf(tmp, "cmd=%s", cmdline);
+	//打印执行启动service的命令
+	sprintf(tmp, "start cmd = %s", cmdline);
 	executeCommandWithPopen(cmdline, tmp, 200);
 	LOGI(tmp, TAG);
 }
@@ -78,9 +79,9 @@ void thread(char* srvname) {
 /**
  * 启动服务，双进程守护
  * srvname  服务名
- * sd 之前创建子进程的pid写入的文件路径
+ * sdPath 之前创建子进程的pid写入的文件路径，缓存的根目录
  */
-int startWorkService(char* srvname, char* sd) {
+int startWorkService(char* srvname, char* sdPath) {
     //pthread_t用于声明线程ID
 	pthread_t id;
 	struct rlimit resourceLimit;
@@ -98,52 +99,51 @@ int startWorkService(char* srvname, char* sd) {
 	} else { //  第一个子进程
 		LOGI("first fork(): I'am child pid=%d", getpid());
 		LOGI("first fork(): setsid=%d", setsid());
-		//使用umask修改文件的屏蔽字，为文件赋予跟=更多的权限。因为继承来的文件可能某些权限被屏蔽，从而失去某些功能，如读写
+		// 使用umask修改文件的屏蔽字，为文件赋予跟=更多的权限。
+		// 因为继承来的文件可能某些权限被屏蔽，从而失去某些功能，如读写
 		umask(0);
 
 		int pid = fork();
 		if (pid == 0) { //第二个子进程
-			FILE *fp;
-			//生成一个文件叫pid
-			sprintf(sd, "%s/pid", sd);
-			if((fp = fopen(sd, "a")) == NULL) {
-			//a 以附加的方式打开只写文件。若文件不存在，则会建立该文件；
+			FILE *filePid;  //生成一个文件叫pid
+			sprintf(sdPath, "%s/pid", sdPath);
+			if((filePid = fopen(sdPath, "a")) == NULL) {
+			//a是以附加的方式打开只写文件。若文件不存在，则会建立该文件；
 			//如果文件存在，写入的数据会被加到文件尾，即文件原先的内容会被保留。（EOF符保留）
-				LOGI("%s文件还未创建!",sd);
-				ftruncate(fp, 0);   //改变文件的大小为0
-				lseek(fp, 0, SEEK_SET);  //移动文件指针到起始处
+				LOGI("%s文件还未创建!",sdPath);
+				ftruncate(filePid, 0);   //改变文件的大小为0
+				lseek(filePid, 0, SEEK_SET);  //移动文件指针到起始处
 			}
-			fclose(fp);
+			fclose(filePid);
 			//换权限重新打开
-			fp = fopen(sd, "rw");   //打开成功返回指针
-			if(fp > 0){
-				char buff1[6];
-				int p = 0;
-				//初始化buff1，全部清0
-				memset(buff1, 0, sizeof(buff1));
-				fseek(fp, 0, SEEK_SET);  //文件指针回到文件起始处
-				fgets(buff1, 6, fp);  //读取一行
-				LOGI("读取的进程号：%s", buff1);
-				if(strlen(buff1) > 1){ // 有值
+			filePid = fopen(sdPath, "rw");   //打开成功返回指针
+			if(filePid > 0){
+				char buffTemp[6];
+				//初始化buffTemp，全部清0
+                //将buffTemp所指向的某一块内存中的内容全部设置为0
+				memset(buffTemp, 0, sizeof(buffTemp));
+				fseek(filePid, 0, SEEK_SET);  //文件指针回到文件起始处
+				fgets(buffTemp, 6, filePid);     //读取一行
+				LOGI("读取的进程号：%s", buffTemp);
+				if(strlen(buffTemp) > 1){    // 有值
 					//atoi把字符串转换成长整型
-					kill(atoi(buff1), SIGTERM);
-					LOGI("杀死进程，pid=%d", atoi(buff1));
+					kill(atoi(buffTemp), SIGTERM);
+					LOGI("杀死进程，pid=%d", atoi(buffTemp));
 				}
 			}
-			fclose(fp);
-			fp = fopen(sd, "w");
+			fclose(filePid);
+			filePid = fopen(sdPath, "w");
 			char buff[100];
-			int k = 3;
-			if(fp > 0){
+			if(filePid > 0){
 				sprintf(buff, "%lu", getpid());
-				fprintf(fp, "%s\n", buff); // 把进程号写入文件
-				LOGI("写入。。。。。");
+				fprintf(filePid, "%s\n", buff);   //把进程号写入文件
+				LOGI("把进程号写入文件。。。。。");
 			}
-			fclose(fp);
-			fflush(fp);
+			fclose(filePid);
+			fflush(filePid);
 			LOGI("step1 I'am child-child pid=%d", getpid());
 
-			//step2:修改进程工作目录为根目录，chdir("/").
+			//step2: 修改进程工作目录为根目录，chdir("/").
 			chdir("/");
 
 			//step3:关闭不需要的从父进程继承过来的文件描述符。
