@@ -29,7 +29,7 @@
             android:exported="true"
             android:persistent="true"
             android:label="Jack"
-            android:process="com.jack.service">
+            android:process="com.jack.workservice">
         </service>
 
     </application>

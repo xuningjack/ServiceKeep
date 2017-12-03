@@ -90,7 +90,7 @@ public enum NativeRuntime {
     /**
      * 启动Service
      * @param srvname 启动服务的名称
-     * @param sdpath
+     * @param sdpath 创建的根缓存目录
      */
     public native void startService(String srvname, String sdpath);
 

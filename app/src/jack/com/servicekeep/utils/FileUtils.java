@@ -38,8 +38,7 @@ public class FileUtils {
     public static String createRootPath(Context mContext) {
         if (isSdCardAvailable() && mContext.getExternalCacheDir() != null) {
             // /sdcard/Android/data/<application package>/cache创建缓存目录
-            cacheRootPath = mContext.getExternalCacheDir()
-                    .getPath();
+            cacheRootPath = mContext.getExternalCacheDir().getPath();
         } else {
             // /data/data/<application package>/cache
             cacheRootPath = mContext.getCacheDir().getPath();
