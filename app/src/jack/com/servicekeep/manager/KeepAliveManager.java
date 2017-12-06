@@ -94,16 +94,11 @@ public enum KeepAliveManager {
             ComponentName componentName = new ComponentName("jack.com.servicekeep",
                     "jack.com.servicekeep.service.KeepAliveJobSchedulerService");
             //ComponentName componentName = new ComponentName(context, KeepAliveJobSchedulerService.class);
-            JobInfo.Builder builder = new JobInfo.Builder(JOB_ID, componentName);
-            builder.setPeriodic(PERIOD);
-            builder.setPersisted(true);   //需要权限RECEIVE_BOOT_COMPLETED
-            jobScheduler.schedule(builder.build());
-
             ComponentName jobService = new ComponentName(context.getPackageName(),
                     KeepAliveJobSchedulerService.class.getName());
             JobInfo jobInfo = new JobInfo.Builder(JOB_ID, jobService)
-                    .setPeriodic(PERIOD)    //设置间隔时间
-                    .setPersisted(true)
+                    .setMinimumLatency(1000)  //延时1s后执行
+                    .setPersisted(true)       //需要权限RECEIVE_BOOT_COMPLETED
                     .setBackoffCriteria(TimeUnit.MINUTES.toMillis(10), JobInfo.BACKOFF_POLICY_LINEAR) //线性重试方案
                     .build();
             int result = jobScheduler.schedule(jobInfo);
