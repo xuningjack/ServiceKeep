@@ -16,7 +16,7 @@ import jack.com.servicekeep.utils.LogUtils;
 
 
 /**
- * 需要保活的服务
+ * 需要保活的业务服务
  * 完美世界
  * @Author Jack
  * @Date 2017/11/22 18:02
@@ -34,7 +34,7 @@ public class WorkService extends Service {
      */
     public static void stopservice(Context context){
         if(context != null){
-            LogUtils.d(TAG, "Jack is a good man!! ------- stopService");
+            LogUtils.d(TAG, "WorkService ------- stopService");
             Intent intent = new Intent(context, WorkService.class);
             context.stopService(intent);
         }
@@ -45,7 +45,7 @@ public class WorkService extends Service {
      * @param context
      */
     public static void startService(Context context) {
-        LogUtils.d(TAG, "Jack is a good man!!  startService");
+        LogUtils.d(TAG, "WorkService ------- startService");
         if(context != null) {
             Intent intent = new Intent(context, WorkService.class);
             intent.setAction(ACTION_START);
@@ -55,7 +55,7 @@ public class WorkService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        LogUtils.d(TAG, "Jack is a good man!!  onBind");
+        LogUtils.d(TAG, "WorkService -------   onBind");
         return null;
     }
 
@@ -66,7 +66,7 @@ public class WorkService extends Service {
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                LogUtils.d(TAG, "WorkService----------onStartCommand Service工作了");
+                LogUtils.d(TAG, "WorkService ---------- onStartCommand Service工作了");
             }
         };
         Timer timer = new Timer();
@@ -78,6 +78,6 @@ public class WorkService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        LogUtils.d(TAG, "workservice ------- is stoped!!!");
+        LogUtils.d(TAG, "WorkService ------- is onDestroy!!!");
     }
 }
