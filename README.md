@@ -25,4 +25,11 @@ Android Service保活模块（5.0以下使用c来fork进程，5.0以上使用Job
 
 
 &lt;!--开机启动监听--&gt;  
-&lt;uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" /&gt;
+&lt;uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" /&gt;    
+
+  
+  
+### 开发常见异常：
+1、由于小米系统的深度定制，使用方需要：
+设置---自启动管理---选择应用（如jack.com.servicekeep）---打开自启动即可。  
+
