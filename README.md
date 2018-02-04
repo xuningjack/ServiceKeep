@@ -14,7 +14,7 @@ Android Service保活模块（5.0以下使用c来fork进程，5.0以上使用Job
 &emsp;&emsp;android:permission="android.permission.BIND_JOB_SERVICE"  
 &emsp;&emsp;android:process="jack.com.servicekeep.job_scheduler_service"/&gt;  
 
-&lt;!--todo 自己业务保活的Service，替换android:name为自己的业务类--&gt;     
+&lt;!--todo 自己业务保活的Service，重写WorkService中的onStartCommand其中执行自己的业务逻辑--&gt;     
 &lt;service    
 &emsp;&emsp;android:name="jack.com.servicekeep.service.WorkService"  
 &emsp;&emsp;android:exported="true"  
